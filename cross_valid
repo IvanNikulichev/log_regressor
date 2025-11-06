@@ -1,0 +1,24 @@
+import numpy as np
+import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import cross_val_score, KFold
+
+X_full = np.vstack((X_train, X_test))
+Y_full = np.concatenate((Y_train, Y_test))
+
+model = LinearRegression()
+
+cv_strategy = KFold(n_splits=5, shuffle=True, random_state=42)
+
+mae_scores = cross_val_score(
+    estimator=model,
+    X=X_full,
+    y=Y_full,
+    cv=cv_strategy,
+    scoring='neg_mean_absolute_error'
+)
+
+mean_mae = -np.mean(mae_scores)
+
+final_answer = round(mean_mae)
+print(final_answer)
