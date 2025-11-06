@@ -1,0 +1,58 @@
+import numpy as np
+from sklearn.base import RegressorMixin
+
+class SGDLinearRegressor(RegressorMixin):
+    def __init__(
+        self,
+        lr=0.01,
+        regularization=1.0,
+        delta_converged=1e-3,
+        max_steps=1000,
+        batch_size=64,
+    ):
+        self.lr = lr
+        self.regularization = regularization
+        self.max_steps = max_steps
+        self.delta_converged = delta_converged
+        self.batch_size = batch_size
+
+        self.weights = None
+        self.b = None
+
+    def fit(self, X, Y):
+        len_data, len_features = X.shape
+
+        self.weights = np.zeros(len_features)
+        self.b = 0.0
+
+        for i in range(self.max_steps):
+            weights_old = self.weights.copy()
+            
+            index = np.random.choice(len_data, size=self.batch_size)
+            X_batch = X[index]
+            Y_batch = Y[index]
+            
+            y_pred = X_batch @ self.weights + self.b
+            error = y_pred - Y_batch
+            grad_weights = (2 / self.batch_size) * X_batch.T @ error + 2 * self.regularization * self.weights
+            grad_b = 2 * np.mean(error)
+            self.weights -= self.lr * grad_weights
+            self.b -= self.lr * grad_b
+            if np.linalg.norm(self.weights - weights_old) < self.delta_converged:
+                break
+        self.coef_ = self.weights
+        self.intercept_ = self.b
+        return self
+
+
+    def predict(self, X):
+        return X @ self.coef_ + self.intercept_
+    
+
+model = SGDLinearRegressor()
+model.fit(X_train, Y_train)
+
+prediction = model.predict(X_test)
+print(Y_test.shape, prediction.shape)
+print("MAE : ", mean_absolute_error(Y_test, prediction))
+print("Mean log : ", root_mean_squared_logarithmic_error(Y_test, prediction))
