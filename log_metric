@@ -1,0 +1,21 @@
+import numpy as np
+from math import sqrt
+
+def root_mean_squared_logarithmic_error(y_true, y_pred, a_min=1.0):
+    a_min = np.float64(a_min)
+    y_true = np.asarray(y_true, dtype=np.float64)
+    y_pred = np.asarray(y_pred, dtype=np.float64)
+
+    if y_true.shape != y_pred.shape:
+        raise ValueError("y_true and y_pred have different lens")
+
+    if np.any(y_true <= 0):
+        raise ValueError("y_true has non-positive numbers")
+
+    y_pred = np.maximum(y_pred, a_min)
+
+    y_true = np.log(y_true)
+    y_pred = np.log(y_pred)
+    
+    metric = float(sqrt(np.mean((y_true - y_pred)**2)))
+    return metric
